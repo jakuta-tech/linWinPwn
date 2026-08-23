@@ -19,6 +19,9 @@ if command -v apt-get >/dev/null; then
 elif command -v pacman >/dev/null; then
     PKG_MANAGER="pacman"
     PACKAGES="python python-pip python-virtualenv nmap smbmap john libsasl openldap krb5 ntp wget zip unzip systemd python-pipx swig curl jq openssl"
+elif command -v dnf >/dev/null; then
+    PKG_MANAGER="dnf"
+    PACKAGES="python3 python3-devel python3-pip nmap john curl jq openssl wget zip unzip rlwrap krb5-devel openldap-devel cyrus-sasl-devel gcc"
 else
     echo -e "${RED}[Error]${NC} Unsupported Linux distribution"
     exit 1
@@ -46,6 +49,9 @@ install_tools() {
     elif [[ "$PKG_MANAGER" == "pacman" ]]; then
         echo -e "${BLUE}Installing tools using pacman...${NC}"
         sudo pacman -Sy --needed --noconfirm $PACKAGES
+    elif [[ "$PKG_MANAGER" == "dnf" ]]; then
+        echo -e "${BLUE}Installing tools using dnf...${NC}"
+        sudo dnf install -y $PACKAGES
     fi
 
     echo -e ""
@@ -87,11 +93,19 @@ install_tools() {
     pipx_install_or_upgrade git+https://github.com/CobblePot59/adcheck adcheck
     pipx_install_or_upgrade git+https://github.com/p0dalirius/smbclient-ng smbclientng
     pipx_install_or_upgrade git+https://github.com/ScorpionesLabs/mssqlpwner mssqlpwner
-    pipx_install_or_upgrade git+https://github.com/logangoins/soapy soapy
+    pipx_install_or_upgrade git+https://github.com/logangoins/soapy SOAPy
     pipx_install_or_upgrade git+https://github.com/j4s0nmo0n/soaphound.py soaphound
     pipx_install_or_upgrade git+https://github.com/synacktiv/gpoParser gpoParser
+    pipx_install_or_upgrade git+https://github.com/cogiceo/daclsearch daclsearch
     pipx_install_or_upgrade git+https://github.com/sikumy/spearspray spearspray
-    pipx_install_or_upgrade git+https://github.com/p0dalirius/ShareHound sharehound
+    wget -q "https://github.com/p0dalirius/ShareHound/archive/refs/heads/main.zip" -O "$scripts_dir/ShareHound.zip"
+    unzip -o "$scripts_dir/ShareHound.zip" -d "$scripts_dir"
+    pipx_install_or_upgrade $scripts_dir/ShareHound-main/Python ShareHound
+    pipx_install_or_upgrade git+https://github.com/mverschu/adwsdomaindump adwsdomaindump
+    pipx_install_or_upgrade git+https://github.com/l4rm4nd/PyADRecon pyadrecon
+    pipx_install_or_upgrade git+https://github.com/l4rm4nd/PyADRecon-ADWS pyadrecon_adws
+    pipx_install_or_upgrade git+https://github.com/aniqfakhrul/powerview.py powerview
+    pipx_install_or_upgrade git+https://github.com/adityatelange/evil-winrm-py evil-winrm-py
     echo -e ""
     echo -e "${BLUE}Downloading tools and scripts using wget and unzipping...${NC}"
     sudo mkdir -p ${scripts_dir}
@@ -100,7 +114,7 @@ install_tools() {
     sudo chown -R "$(whoami)":"$(whoami)" ${scripts_dir}
     python3 -m venv "${scripts_dir}/.venv"
     source "${scripts_dir}/.venv/bin/activate"
-    pip3 install PyYAML alive-progress xlsxwriter sectools typer[all] impacket tabulate arc4 msldap pandas requests requests_ntlm requests_toolbelt cmd2 pycryptodome bs4 pyasn1_modules smbprotocol[kerberos] pydantic lxml bloodhound-opengraph termcolor --upgrade
+    pip3 install PyYAML alive-progress xlsxwriter sectools typer[all] impacket tabulate arc4 msldap pandas requests requests_ntlm requests_toolbelt cmd2 pycryptodome bs4 pyasn1_modules smbprotocol[kerberos] pydantic lxml bloodhound-opengraph termcolor dnspython tqdm --upgrade
     pip3 install ldap3-bleeding-edge #LDAP Channel Binding
     deactivate
     
@@ -122,6 +136,7 @@ install_tools() {
     wget -q "https://raw.githubusercontent.com/shellster/LDAPPER/master/queries.py" -O "$scripts_dir/ldapper/queries.py"
     wget -q "https://raw.githubusercontent.com/shellster/LDAPPER/master/ldap_connector.py" -O "$scripts_dir/ldapper/ldap_connector.py"
     wget -q "https://github.com/trustedsec/orpheus/archive/refs/heads/main.zip" -O "$scripts_dir/orpheus.zip"
+    wget -q "https://github.com/dirkjanm/krbrelayx/archive/refs/heads/master.zip" -O "$scripts_dir/krbrelayx.zip"
     wget -q "https://github.com/lkarlslund/Adalanche/releases/download/v2025.2.6/adalanche-linux-x64-v2025.2.6" -O "$scripts_dir/adalanche"
     wget -q "https://github.com/Hackndo/pyGPOAbuse/archive/refs/heads/master.zip" -O "$scripts_dir/pyGPOAbuse.zip"
     wget -q "https://raw.githubusercontent.com/X-C3LL/GPOwned/main/GPOwned.py" -O "$scripts_dir/GPOwned.py"
@@ -139,15 +154,20 @@ install_tools() {
     wget -q "https://github.com/MorDavid/NetworkHound/archive/refs/heads/main.zip" -O "$scripts_dir/NetworkHound.zip"
     wget -q "https://raw.githubusercontent.com/MarcoZufferli/ScriptScout/refs/heads/main/scriptscout.py" -O "$scripts_dir/scriptscout.py"
     wget -q "https://github.com/depthsecurity/RelayKing-Depth/archive/refs/heads/master.zip" -O "$scripts_dir/RelayKing-Depth.zip"
+    wget -q "https://github.com/dievus/ADPulse/archive/refs/heads/main.zip" -O "$scripts_dir/ADPulse.zip"
+    wget -q "https://raw.githubusercontent.com/p0dalirius/GhostSPN/main/GhostSPN.py" -O "$scripts_dir/GhostSPN.py"
+    wget -q "https://raw.githubusercontent.com/nnnnino/rbcdbrute/main/rbcdbrute.py" -O "$scripts_dir/rbcdbrute.py"
 
     unzip -o "$scripts_dir/aced.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/sccmhunter.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/orpheus.zip" -d "$scripts_dir"
+    unzip -o "$scripts_dir/krbrelayx.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/pyGPOAbuse.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/SCCMSecrets.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/GroupPolicyBackdoor.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/NetworkHound.zip" -d "$scripts_dir"
     unzip -o "$scripts_dir/RelayKing-Depth.zip" -d "$scripts_dir"
+    unzip -o "$scripts_dir/ADPulse.zip" -d "$scripts_dir"
     tar -C $scripts_dir -xf "$scripts_dir/godap-v2.8.0-linux-amd64.tar.gz" godap
 
     chmod +x "$scripts_dir/aced-main/aced.py"
@@ -166,6 +186,8 @@ install_tools() {
     chmod +x "$scripts_dir/ldapper/ldapper.py"
     chmod +x "$scripts_dir/orpheus-main/orpheus.py"
     chmod +x "$scripts_dir/orpheus-main/GetUserSPNs.py"
+    chmod +x "$scripts_dir/krbrelayx-master/addspn.py"
+    chmod +x "$scripts_dir/krbrelayx-master/krbrelayx.py"
     chmod +x "$scripts_dir/adalanche"
     chmod +x "$scripts_dir/pyGPOAbuse-master/pygpoabuse.py"
     chmod +x "$scripts_dir/GPOwned.py"
@@ -183,6 +205,9 @@ install_tools() {
     chmod +x "$scripts_dir/NetworkHound-main/NetworkHound.py"
     chmod +x "$scripts_dir/scriptscout.py"
     chmod +x "$scripts_dir/RelayKing-Depth-master/relayking.py"
+    chmod +x "$scripts_dir/ADPulse-main/ADPulse.py"
+    chmod +x "$scripts_dir/GhostSPN.py"
+    chmod +x "$scripts_dir/rbcdbrute.py"
 }
 
 install_tools || { echo -e "\n${RED}[Failure]${NC} Installing tools failed.. exiting script!\n"; exit 1; }
